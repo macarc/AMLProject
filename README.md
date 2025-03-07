@@ -9,3 +9,9 @@ Stage 2 would be to take a text label (convert to a vector using word2vec) and a
 Stage 3 (our stretch goal) would be to take a text label and generate a sound effect. Whether or not this is feasible will depend on what direction the course takes.
 
 For all 3 of these, data is easy to obtain, as we can just use any labelled sound effect library. For stage 1, ARCA23K (https://zenodo.org/records/5117901) will provide suitable labelled sounds.
+
+## Usage
+
+### Downloading datasets
+
+`download_arca.py` downloads the ARCA dataset. Depending on your Python version, this may require manually extracting a ZIP file at the end. There is ~9GB of data, so it may take a while to download!
