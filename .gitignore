@@ -1,3 +1,4 @@
 .idea/*
 .ropeproject
 datasets
+.venv
