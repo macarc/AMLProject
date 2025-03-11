@@ -32,7 +32,9 @@ def load_train_data(extract_features, force_reload=False):
         return _reload_train_data(extract_features)
 
     try:
-        return np.load("datasets/train_features.npy"), np.load("datasets/train_labels.npy")
+        return np.load("datasets/train_features.npy"), np.load(
+            "datasets/train_labels.npy"
+        )
     except:
         return _reload_train_data(extract_features)
 
@@ -62,7 +64,9 @@ def load_test_data(extract_features, force_reload=False):
         return _reload_test_data(extract_features)
 
     try:
-        return np.load("datasets/test_features.npy"), np.load("datasets/test_labels.npy")
+        return np.load("datasets/test_features.npy"), np.load(
+            "datasets/test_labels.npy"
+        )
     except:
         return _reload_test_data(extract_features)
 
@@ -109,11 +113,11 @@ def _load(audio_list_filename, audio_directory, extract_features):
             features.append(extract_features(audio))
             labels.append(label_to_number(label))
 
-    print(f"Loaded {len(features)} audio files")
-
     # Convert to numpy arrays
     features = np.array(features)
     labels = np.array(labels)
+
+    print(f"Loaded {len(features)} audio files")
 
     # Force garbage collection, so that we remove unnecessary audio file data from memory before we load the next data subset
     gc.collect()

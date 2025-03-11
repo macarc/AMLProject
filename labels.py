@@ -1,5 +1,3 @@
-import csv
-
 labels = [
     # Music
     "Acoustic_guitar",
@@ -82,4 +80,15 @@ labels = [
 
 
 def label_to_number(label):
+    """Encode text label as number between 0 and label_count() - 1"""
     return label.index(label)
+
+
+def number_to_label(number):
+    """Decode text label from number to string"""
+    return labels[number]
+
+
+def label_count():
+    """Get number of labels"""
+    return len(labels)
