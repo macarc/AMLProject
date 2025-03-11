@@ -14,4 +14,4 @@ For all 3 of these, data is easy to obtain, as we can just use any labelled soun
 
 ### Downloading datasets
 
-`download_arca.py` downloads the ARCA dataset. Depending on your Python version, this may require manually extracting a ZIP file at the end. There is ~9GB of data, so it may take a while to download!
+`download_fsd50k.py` downloads the FSD50K dataset. This requires manually extracting a ZIP file at the end. There is ~30GB uncompressed data, so it may take a while to download!
