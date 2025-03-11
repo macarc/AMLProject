@@ -15,7 +15,6 @@ labels = [
     "Trumpet",
     "Wind_chime",
     "Wind_instrument_and_woodwind_instrument",
-    "Livestock_and_farm_animals_and_working_animals",
     # Sounds of things
     "Boom",
     "Camera",
@@ -69,7 +68,7 @@ labels = [
     # Animal
     "Bark",
     "Cricket",
-    "Livestock,_farm_animals,_working_animals",
+    "Livestock_and_farm_animals_and_working_animals",
     "Meow",
     "Rattle",
     # Source-ambiguous sounds
@@ -81,7 +80,7 @@ labels = [
 
 def label_to_number(label):
     """Encode text label as number between 0 and label_count() - 1"""
-    return label.index(label)
+    return labels.index(label)
 
 
 def number_to_label(number):

@@ -25,7 +25,7 @@ test_dir = "datasets/FSD50K.eval_audio"
 def load_train_data(extract_features, force_reload=False):
     """
     Load the training dataset
-    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features
+    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features (or None)
     - force_reload: if True, reloads all audio files from disk; otherwise, load them from cached files (see header)
     """
     if force_reload:
@@ -42,7 +42,7 @@ def load_train_data(extract_features, force_reload=False):
 def load_val_data(extract_features, force_reload=False):
     """
     Load the validation dataset
-    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features
+    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features (or None)
     - force_reload: if True, reloads all audio files from disk; otherwise, load them from cached files (see header)
     """
     if force_reload:
@@ -57,7 +57,7 @@ def load_val_data(extract_features, force_reload=False):
 def load_test_data(extract_features, force_reload=False):
     """
     Load the test dataset
-    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features
+    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features (or None)
     - force_reload: if True, reloads all audio files from disk; otherwise, load them from cached files (see header)
     """
     if force_reload:
@@ -107,10 +107,20 @@ def _load(audio_list_filename, audio_directory, extract_features):
         for i, (audiofile, label, _) in enumerate(reader):
             audiofilename = f"{audio_directory}/{audiofile}.wav"
 
+            # Load file
             audio, sr = librosa.load(audiofilename, sr=constants.SAMPLE_RATE)
             assert sr == constants.SAMPLE_RATE
 
-            features.append(extract_features(audio))
+            # Get features
+            audio_features = extract_features(audio)
+
+            # If there are no features, skip this audio file
+            if audio_features is None:
+                print(f"No features found for file {audiofilename}, skipping")
+                continue
+
+            # Append features/label to lists
+            features.append(audio_features)
             labels.append(label_to_number(label))
 
     # Convert to numpy arrays
@@ -128,7 +138,7 @@ def _load(audio_list_filename, audio_directory, extract_features):
 def reload_cache(extract_features):
     """
     Reload the cache. This is necessary if you wish to extract different features.
-    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features
+    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features (or None)
     """
     # Reload the data
     load_train_data(extract_features, force_reload=True)

@@ -2,4 +2,5 @@
 SAMPLE_RATE = 22050
 
 # Length of audio, in samples
-AUDIO_LENGTH = round(SAMPLE_RATE * 1)
+# Used in adjust_length in helpers - all audio files will be truncated/zero-padded to this length when they're loaded!
+AUDIO_LENGTH = round(SAMPLE_RATE * 2)
