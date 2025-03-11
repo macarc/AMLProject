@@ -24,7 +24,7 @@ These can be installed globally with pip, or [using a virtual environment](https
 
 ### Loading datasets
 
-`load_datasets.py` can be used as a library, exposing `load_dev_data` and `load_eval_data`. By default, these functions cache the loaded numpy arrays. To reload the cache (e.g. if `constants.AUDIO_LENGTH` has changed), either pass `force_reload = True`, or run the file as a script: `python load_datasets.py`.
+`load_datasets.py` can be used as a library, exposing `load_dev_data` and `load_eval_data`. By default, these functions cache the loaded numpy arrays. To reload the cache (e.g. if you want to extract a different feature), either pass `force_reload = True`, or run the file as a script: `python load_datasets.py`.
 
 ### Code formatting
 
