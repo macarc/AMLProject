@@ -24,7 +24,7 @@ class DownloadProgressBar:
 
 def adjust_length(audio_data):
     """
-    Resize audio_data to have length target_length by either
+    Resize audio_data to have length constants.AUDIO_LENGTH by either
     - truncating if audio_data is too long
     - appending zero-padding if audio-data is too long
     """
