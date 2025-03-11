@@ -2,3 +2,4 @@
 .ropeproject
 datasets
 .venv
+__pycache__

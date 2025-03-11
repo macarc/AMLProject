@@ -21,3 +21,27 @@ class DownloadProgressBar:
         else:
             self.pbar.finish()
 
+
+def adjust_length(audio_data):
+    """
+    Resize audio_data to have length target_length by either
+    - truncating if audio_data is too long
+    - appending zero-padding if audio-data is too long
+    """
+
+    # Ensure audio data has shape (N,) - i.e. it is mono
+    assert len(audio_data.shape) == 1
+
+    if len(audio_data) <= constants.AUDIO_LENGTH:
+        # If the audio data is too short, append zeros
+        adjusted = np.concatenate(
+            (audio_data, np.zeros((constants.AUDIO_LENGTH - len(audio_data),)))
+        )
+    else:
+        # If the audio data is too long, truncate it
+        adjusted = audio_data[: constants.AUDIO_LENGTH]
+
+    # Check that we did indeed adjust the length correctly
+    assert adjusted.shape == (constants.AUDIO_LENGTH,)
+
+    return adjusted

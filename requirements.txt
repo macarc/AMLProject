@@ -1,0 +1,16 @@
+# audio loading
+librosa
+
+# required for librosa on newer Python versions
+standard-aifc
+standard-sunau
+
+# matrices and machine learning
+numpy
+torch
+
+# dataset download feedback
+progressbar
+
+# code formatting, optional
+black

@@ -12,6 +12,20 @@ For all 3 of these, data is easy to obtain, as we can just use any labelled soun
 
 ## Usage
 
+### Installing dependencies
+
+Install dependencies with `pip install -r requirements.txt`.
+
+These can be installed globally with pip, or [using a virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
+
 ### Downloading datasets
 
 `download_fsd50k.py` downloads the FSD50K dataset. This requires manually extracting a ZIP file at the end. There is ~30GB uncompressed data, so it may take a while to download!
+
+### Loading datasets
+
+`load_datasets.py` can be used as a library, exposing `load_dev_data` and `load_eval_data`. By default, these functions cache the loaded numpy arrays. To reload the cache (e.g. if `constants.AUDIO_LENGTH` has changed), either pass `force_reload = True`, or run the file as a script: `python load_datasets.py`.
+
+### Code formatting
+
+If [black](https://black.readthedocs.io/en/stable/) is installed, run `black .` to format.
