@@ -1,10 +1,15 @@
-from helpers import adjust_length
+from audiodataset import AudioDataSet
+from helpers import adjust_length, get_torch_backend
 from labels import label_count, number_to_label
-from load_datasets import load_train_data, load_val_data, load_test_data, reload_cache
+from load_datasets import load_data_to_device
 import numpy as np
 import librosa
 import constants
 import torch
+from torch.utils.data import DataLoader
+
+
+# %% FEATURE EXTRACTION
 
 
 def extract_features(audio_data):
@@ -35,45 +40,37 @@ def extract_features(audio_data):
     return mel_spectrogram
 
 
+# %% MODEL TRAINING
 if __name__ == "__main__":
-    # Uncomment this for the first run!
-    # reload_cache(extract_features)
+    # %% TORCH BACKEND
 
-    # Load dataset
-    train_features, train_labels = load_train_data(extract_features)
-    val_features, val_labels = load_val_data(extract_features)
-    test_features, test_labels = load_test_data(extract_features)
+    backend_dev = get_torch_backend()
 
-    # Convert to tensors
-    train_features = torch.tensor(train_features)
-    train_labels = torch.tensor(train_labels)
-    val_features = torch.tensor(val_features)
-    val_labels = torch.tensor(val_labels)
-    test_features = torch.tensor(test_features)
-    test_labels = torch.tensor(test_labels)
+    # %% LOAD FEATURES
 
-    # Get number of data points in each subset
-    Ntrain = train_features.shape[0]
-    Nval = val_features.shape[0]
-    Ntest = test_features.shape[0]
+    # NB: pass force_reload = True here when extract_features has changed!
+    (
+        train_features,
+        train_labels,
+        val_features,
+        val_labels,
+        test_features,
+        test_labels,
+    ) = load_data_to_device(backend_dev, extract_features, force_reload=False)
 
-    # Check that features are correct shape
-    assert train_features.shape == torch.Size([Ntrain, 128, 87])
-    assert val_features.shape == torch.Size([Nval, 128, 87])
-    assert test_features.shape == torch.Size([Ntest, 128, 87])
+    train_dataset = AudioDataSet(train_features, train_labels)
+    train_dataloader = DataLoader(train_dataset, batch_size=50, shuffle=True)
 
-    # Check that labels are correct shape
-    assert train_labels.shape == torch.Size([Ntrain])
-    assert val_labels.shape == torch.Size([Nval])
-    assert test_labels.shape == torch.Size([Ntest])
+    # %% DO THINGS HERE!
 
-    # Get label with minimum number of training examples (just to check it isn't a tiny number of examples)
+    # Example: get label with minimum number of training examples (just to check it isn't a tiny number of examples)
+    labels_and_counts = [
+        (i, torch.sum(train_labels == i).item()) for i in range(label_count())
+    ]
     min_label, min_count = min(
-        [(i, torch.sum(train_labels == i).item()) for i in range(label_count())],
+        labels_and_counts,
         key=lambda a: a[1],
     )
     print(
         f"Label with the least training examples is '{number_to_label(min_label)}' with {min_count} instances"
     )
-
-    ## DO THINGS HERE :)

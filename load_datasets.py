@@ -12,6 +12,7 @@ from helpers import adjust_length
 from labels import label_to_number
 import librosa
 import numpy as np
+import torch
 
 
 train_csv = "datasets/ARCA23K-FSD.ground_truth/train.csv"
@@ -144,6 +145,65 @@ def reload_cache(extract_features):
     load_train_data(extract_features, force_reload=True)
     load_val_data(extract_features, force_reload=True)
     load_test_data(extract_features, force_reload=True)
+
+
+def load_data_to_device(backend_device, extract_features, force_reload=False):
+    """
+    Load the training, validation and test datasets on the given device,
+    using extract_features to get the features for each audio sample.
+
+    - backend_device: torch backend device (use helpers.get_torch_backend())
+    - extract features: function that takes an audio file (a numpy array with length (N,)) and produces its features (or None)
+    - force_reload: if True, reloads all audio files from disk; otherwise, load them from cached files (see header)
+
+    Returns:
+        train_features, train_labels, val_features, val_labels, test_features, test_labels
+    """
+    # Load dataset
+    train_features, train_labels = load_train_data(
+        extract_features, force_reload=force_reload
+    )
+    val_features, val_labels = load_val_data(
+        extract_features, force_reload=force_reload
+    )
+    test_features, test_labels = load_test_data(
+        extract_features, force_reload=force_reload
+    )
+
+    # Convert to tensors
+    train_features = torch.tensor(
+        train_features, dtype=torch.float32, device=backend_device
+    )
+    train_labels = torch.tensor(
+        train_labels, dtype=torch.float32, device=backend_device
+    )
+    val_features = torch.tensor(
+        val_features, dtype=torch.float32, device=backend_device
+    )
+    val_labels = torch.tensor(val_labels, dtype=torch.float32, device=backend_device)
+    test_features = torch.tensor(
+        test_features, dtype=torch.float32, device=backend_device
+    )
+    test_labels = torch.tensor(test_labels, dtype=torch.float32, device=backend_device)
+
+    # Get number of data points in each subset
+    Ntrain = train_features.shape[0]
+    Nval = val_features.shape[0]
+    Ntest = test_features.shape[0]
+
+    # Check that labels are correct shape
+    assert train_labels.shape == torch.Size([Ntrain])
+    assert val_labels.shape == torch.Size([Nval])
+    assert test_labels.shape == torch.Size([Ntest])
+
+    return (
+        train_features,
+        train_labels,
+        val_features,
+        val_labels,
+        test_features,
+        test_labels,
+    )
 
 
 if __name__ == "__main__":

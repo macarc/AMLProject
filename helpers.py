@@ -25,7 +25,7 @@ class DownloadProgressBar:
 
 def adjust_length(audio_data):
     """
-    Resize audio_data to have length target_length by either
+    Resize audio_data to have length constants.AUDIO_LENGTH by either
     - truncating if audio_data is too long
     - appending zero-padding if audio-data is too long
     """
@@ -68,3 +68,29 @@ def load_model(filename, model, optimiser):
 
     except FileNotFoundError:
         return False
+
+
+def get_torch_backend(notify_user=True):
+    """
+    Get the most optimal torch backend - i.e. the device that the training runs on.
+    Ideally, this is MPS/CUDA (which runs on GPU, and is ~20x faster!).
+    Usage:
+    backend_dev = get_torch_backend()
+    data1 = torch.tensor(..., device=backend_dev) # load data on to GPU
+    model = ...
+    model.to(backend_dev) # convert model to run on GPU
+
+    - notify_user : if True, print the backend that is being used.
+    """
+    if torch.backends.mps.is_available():
+        if notify_user:
+            print("Using MPS backend (fast!)")
+        return torch.device("mps")
+    elif torch.backends.cuda.is_available():
+        if notify_user:
+            print("Using CUDA backend (fast!)")
+        return torch.device("cuda")
+    else:
+        if notify_user:
+            print("GPU not available, using CPU instead (slow...)")
+        return torch.device("cuda")

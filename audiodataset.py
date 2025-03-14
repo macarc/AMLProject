@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
+
 class AudioDataSet(Dataset):
     def __init__(self, features, labels):
         # Save features and labels
