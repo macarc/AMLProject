@@ -1,6 +1,7 @@
 import constants
 import numpy as np
 import progressbar
+import torch
 
 
 # Taken from https://stackoverflow.com/posts/53643011/revisions
@@ -45,3 +46,25 @@ def adjust_length(audio_data):
     assert adjusted.shape == (constants.AUDIO_LENGTH,)
 
     return adjusted
+
+
+def save_model(filename, model, optimiser):
+    """Save model/optimiser state to file, so that training can be resumed later"""
+    state = {
+        "model": model.state_dict(),
+        "optimiser": optimiser.state_dict(),
+    }
+    torch.save(state, filename)
+
+
+def load_model(filename, model, optimiser):
+    """Load model/optimiser state from file - returns True if the state was successfully loaded"""
+    try:
+        state = torch.load(filename)
+        model.load_state_dict(state["model"])
+        optimiser.load_state_dict(state["optimiser"])
+        model.eval()
+        return True
+
+    except FileNotFoundError:
+        return False
