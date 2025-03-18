@@ -12,5 +12,9 @@ torch
 # dataset download feedback
 progressbar
 
+# tqdm
+tqdm
+
 # code formatting, optional
 black
+matplotlib

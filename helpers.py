@@ -86,11 +86,11 @@ def get_torch_backend(notify_user=True):
         if notify_user:
             print("Using MPS backend (fast!)")
         return torch.device("mps")
-    elif torch.backends.cuda.is_available():
+    elif torch.cuda.is_available():
         if notify_user:
             print("Using CUDA backend (fast!)")
         return torch.device("cuda")
     else:
         if notify_user:
             print("GPU not available, using CPU instead (slow...)")
-        return torch.device("cuda")
+        return torch.device("cpu")
