@@ -12,7 +12,13 @@
 
 from audiodataset import AudioDataSet
 import constants
-from helpers import adjust_length, load_model, save_model, get_torch_backend
+from helpers import (
+    adjust_length,
+    load_model,
+    save_model,
+    get_torch_backend,
+    get_label_weights,
+)
 from labels import label_count
 import librosa
 from load_datasets import load_data_to_device
@@ -22,6 +28,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+import sklearn
 
 
 # %% FEATURE EXTRACTION
@@ -242,7 +249,10 @@ if __name__ == "__main__":
     if load_model(model_filename, nnet, optimiser):
         print("Loaded model from file!")
 
-    loss_fcn = torch.nn.CrossEntropyLoss()
+    label_weights = torch.tensor(
+        get_label_weights(train_labels), dtype=torch.float32, device=backend_dev
+    )
+    loss_fcn = torch.nn.CrossEntropyLoss(weight=label_weights)
 
     # %% TRAINING LOOP
 
@@ -280,6 +290,10 @@ if __name__ == "__main__":
     save_model(model_filename, nnet, optimiser)
 
     # %% DISPLAY RESULTS
+
+    train_output = nnet(train_features)
+    train_accuracy = accuracy(train_output, train_labels)
+    print(f"Final training accuracy: {train_accuracy}")
 
     val_output = nnet(val_features)
     val_accuracy = accuracy(val_output, val_labels)
