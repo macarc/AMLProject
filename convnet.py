@@ -230,7 +230,8 @@ if __name__ == "__main__":
     train_accuracies = []
 
     # %% MODEL STORAGE FILENAME
-
+    # needs to be changed per model unless forced override
+    # may need changed depending on torch.device()
     model_filename = "models/conv.pt"
 
     # %% LOAD MODEL
