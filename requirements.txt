@@ -8,6 +8,7 @@ standard-sunau
 # matrices and machine learning
 numpy
 torch
+scikit-learn
 
 # dataset download feedback
 progressbar

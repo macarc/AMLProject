@@ -1,7 +1,11 @@
+from sklearn.utils import compute_class_weight
+
 import constants
 import numpy as np
 import progressbar
 import torch
+
+from labels import label_count
 
 
 # Taken from https://stackoverflow.com/posts/53643011/revisions
@@ -94,3 +98,12 @@ def get_torch_backend(notify_user=True):
         if notify_user:
             print("GPU not available, using CPU instead (slow...)")
         return torch.device("cpu")
+
+
+
+def get_label_weights(labels):
+    label_classes = np.arange(0, label_count())
+    return compute_class_weight(
+        class_weight="balanced", classes=label_classes, y=labels.cpu().numpy()
+    )
+

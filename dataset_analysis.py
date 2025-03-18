@@ -7,6 +7,7 @@ import librosa
 import constants
 import torch
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 
 
 # %% FEATURE EXTRACTION
@@ -62,3 +63,22 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(train_dataset, batch_size=50, shuffle=True)
 
     # %% DO THINGS HERE!
+
+    # Get label with minimum number of training examples (just to check it isn't a tiny number of examples)
+    labels_and_counts = [
+        (i, torch.sum(train_labels == i).item()) for i in range(label_count())
+    ]
+    min_label, min_count = min(
+        labels_and_counts,
+        key=lambda a: a[1],
+    )
+    print(
+        f"Label with the least training examples is '{number_to_label(min_label)}' with {min_count} instances"
+    )
+
+    label_names = [number_to_label(i) for i, _ in labels_and_counts]
+    label_counts = [count for _, count in labels_and_counts]
+
+    plt.xticks(rotation="vertical", fontsize=5)
+    plt.bar(label_names, label_counts)
+    plt.show()
