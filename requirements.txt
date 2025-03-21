@@ -12,6 +12,10 @@ scikit-learn
 
 # dataset download feedback
 progressbar
+tqdm
+
+# plotting
+matplotlib
 
 # tqdm
 tqdm

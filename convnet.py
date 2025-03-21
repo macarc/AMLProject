@@ -19,7 +19,7 @@ from helpers import (
     get_torch_backend,
     get_label_weights,
 )
-from labels import label_count
+from labels import label_count, number_to_label
 import librosa
 from load_datasets import load_data_to_device
 import numpy as np
@@ -169,7 +169,7 @@ class ConvNet(torch.nn.Module):
         return network_output
 
 
-# %% ACCURACY CALCULATION
+# %% ACCURACY CALCULATIONS
 
 
 def accuracy(output, targets, top_n=5):
@@ -208,6 +208,46 @@ def accuracy(output, targets, top_n=5):
     return accuracy
 
 
+def label_accuracy(output, targets, top_n=5):
+    """
+    Get model accuracy per label - the percentage of outputs where
+    the correct label is in the top top_n predictions, grouped by label
+
+    e.g. if top_n = 5, then this is the percentage of model outputs
+         that put the correct label in the top 5
+
+    Doing the "top_n" predictions helps deal with similar labels.
+
+    Returns: numpy array where the i'th element is
+            (#correct predictions of label i / (#total times label i appears in target))
+    """
+    assert len(targets.shape) == 1
+    assert output.shape == torch.Size([len(targets), label_count()])
+
+    # Convert targets to numpy
+    targets = targets.cpu().numpy()
+
+    # Get the top top_n predictions
+    top_n_predictions = np.argpartition(
+        output.detach().cpu().numpy(), label_count() - top_n, axis=1
+    )[:, -top_n:]
+    assert top_n_predictions.shape == torch.Size([len(targets), top_n])
+
+    # Number of correctly/incorrectly predicted datapoints per label
+    correct_counts = np.zeros(label_count())
+    incorrect_counts = np.zeros(label_count())
+
+    for p in range(len(output)):
+        for i in range(top_n):
+            if top_n_predictions[p, i].item() == targets[p]:
+                correct_counts[int(targets[p])] += 1
+                break
+        else:
+            incorrect_counts[int(targets[p])] += 1
+
+    return correct_counts / (incorrect_counts + correct_counts)
+
+
 # %% MODEL TRAINING
 if __name__ == "__main__":
     # %% TORCH BACKEND
@@ -224,7 +264,7 @@ if __name__ == "__main__":
         val_labels,
         test_features,
         test_labels,
-    ) = load_data_to_device(backend_dev, extract_features, force_reload=False)
+    ) = load_data_to_device(backend_dev, extract_features, force_reload=True)
 
     train_dataset = AudioDataSet(train_features, train_labels)
     train_dataloader = DataLoader(train_dataset, batch_size=50, shuffle=True)
@@ -237,8 +277,8 @@ if __name__ == "__main__":
     train_accuracies = []
 
     # %% MODEL STORAGE FILENAME
-    # needs to be changed per model unless forced override
-    # may need changed depending on torch.device()
+
+    # needs to be changed per model
     model_filename = "models/conv.pt"
 
     # %% LOAD MODEL
@@ -314,4 +354,21 @@ if __name__ == "__main__":
 
     plt.plot(train_losses)
     plt.title("Training Loss")
+    plt.show()
+
+    label_names = [number_to_label(i) for i in range(label_count())]
+
+    plt.xticks(rotation="vertical", fontsize=5)
+    plt.bar(label_names, label_accuracy(train_output, train_labels))
+    plt.title("Training Accuracy per label")
+    plt.show()
+
+    plt.xticks(rotation="vertical", fontsize=5)
+    plt.bar(label_names, label_accuracy(val_output, val_labels))
+    plt.title("Validation Accuracy per label")
+    plt.show()
+
+    plt.xticks(rotation="vertical", fontsize=5)
+    plt.bar(label_names, label_accuracy(test_output, test_labels))
+    plt.title("Test Accuracy per label")
     plt.show()

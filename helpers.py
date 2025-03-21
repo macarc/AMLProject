@@ -100,10 +100,8 @@ def get_torch_backend(notify_user=True):
         return torch.device("cpu")
 
 
-
 def get_label_weights(labels):
     label_classes = np.arange(0, label_count())
     return compute_class_weight(
         class_weight="balanced", classes=label_classes, y=labels.cpu().numpy()
     )
-

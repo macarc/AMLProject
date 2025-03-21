@@ -76,11 +76,6 @@ def main():
     # Create the datasets directory
     os.makedirs("datasets", exist_ok=True)
 
-    # Download CSV metadata
-    download(ground_truth_url, "ground_truth.zip")
-    extract("ground_truth.zip")
-    remove(["ground_truth.zip"])
-
     # Download train/validation sets
     download_multipart_zip(audio_dev_files_urls, "audio_dev")
 

@@ -1,6 +1,6 @@
 from audiodataset import AudioDataSet
 from helpers import adjust_length, get_torch_backend
-from labels import label_count, number_to_label
+from labels import label_count, number_to_label, label_to_number
 from load_datasets import load_data_to_device
 import numpy as np
 import librosa
@@ -41,6 +41,27 @@ def extract_features(audio_data):
     return mel_spectrogram
 
 
+def plot_label_frequencies(labels, title):
+    labels_and_counts = [
+        (i, torch.sum(labels == i).item()) for i in range(label_count())
+    ]
+    min_label, min_count = min(
+        labels_and_counts,
+        key=lambda a: a[1],
+    )
+    print(
+        f"Label with the least training examples is '{number_to_label(min_label)}' with {min_count} instances"
+    )
+
+    label_names = [number_to_label(i) for i, _ in labels_and_counts]
+    label_counts = [count for _, count in labels_and_counts]
+
+    plt.xticks(rotation="vertical", fontsize=5)
+    plt.bar(label_names, label_counts)
+    plt.title(title)
+    plt.show()
+
+
 # %% MODEL TRAINING
 if __name__ == "__main__":
     # %% TORCH BACKEND
@@ -65,20 +86,7 @@ if __name__ == "__main__":
     # %% DO THINGS HERE!
 
     # Get label with minimum number of training examples (just to check it isn't a tiny number of examples)
-    labels_and_counts = [
-        (i, torch.sum(train_labels == i).item()) for i in range(label_count())
-    ]
-    min_label, min_count = min(
-        labels_and_counts,
-        key=lambda a: a[1],
-    )
-    print(
-        f"Label with the least training examples is '{number_to_label(min_label)}' with {min_count} instances"
-    )
 
-    label_names = [number_to_label(i) for i, _ in labels_and_counts]
-    label_counts = [count for _, count in labels_and_counts]
-
-    plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, label_counts)
-    plt.show()
+    plot_label_frequencies(train_labels, "Train labels")
+    plot_label_frequencies(val_labels, "Val labels")
+    plot_label_frequencies(test_labels, "Test labels")
