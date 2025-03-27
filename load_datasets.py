@@ -165,6 +165,38 @@ def _load_files_in_csv(audio_list_filename, extract_features):
     return features, labels
 
 
+def load_files(audio_filenames, backend_dev, extract_features):
+    """
+    Load features from a list of filenames. This is a shortcut, used in the GUI application.
+    Returns: features : torch tensor
+    """
+
+    # List to hold features
+    features = []
+
+    # Get each audio file and append to features
+    for audiofile in audio_filenames:
+        # Load file
+        audio, sr = librosa.load(audiofile, sr=constants.SAMPLE_RATE)
+        assert sr == constants.SAMPLE_RATE
+
+        # Get features
+        audio_features = extract_features(audio)
+
+        # If there are no features, skip this audio file
+        if audio_features is None:
+            print(f"No features found for file {audiofile}.wav, skipping")
+            continue
+
+        # Append features/label to lists
+        features.append(audio_features)
+
+    # Convert to numpy arrays
+    features = np.array(features)
+
+    return torch.tensor(features, device=backend_dev, dtype=torch.float32)
+
+
 if __name__ == "__main__":
     # Feature is just making all the files the same length (by truncating/zero-padding)
     extract_features = adjust_length
