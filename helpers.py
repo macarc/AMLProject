@@ -1,3 +1,4 @@
+import librosa
 from sklearn.utils import compute_class_weight
 
 import constants
@@ -36,6 +37,8 @@ def adjust_length(audio_data):
 
     # Ensure audio data has shape (N,) - i.e. it is mono
     assert len(audio_data.shape) == 1
+
+    audio_data, _ = librosa.effects.trim(y=audio_data)
 
     if len(audio_data) <= constants.AUDIO_LENGTH:
         # If the audio data is too short, append zeros

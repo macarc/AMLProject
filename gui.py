@@ -210,7 +210,7 @@ class App:
 backend_dev = get_torch_backend()
 model_filename = "models/conv.pt"
 
-nnet = convnet.ConvNet([128, 64, 64, 64, 70], label_count(), 5)
+nnet = convnet.ConvNet([20, 48, 64], label_count(), [4, 3, 2])
 optimiser = torch.optim.Adam(nnet.parameters())
 nnet.to(backend_dev)
 

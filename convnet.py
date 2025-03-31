@@ -55,9 +55,7 @@ def extract_features(audio_data):
     assert np.max(np.abs(normalised)) == 1
 
     # Extract a mel spectrogram
-    mel_spectrogram = librosa.feature.melspectrogram(
-        y=audio_data, sr=constants.SAMPLE_RATE
-    )
+    mel_spectrogram = librosa.feature.mfcc(y=audio_data, sr=constants.SAMPLE_RATE)
 
     return mel_spectrogram
 
@@ -106,7 +104,7 @@ class ConvBlock(torch.nn.Module):
 
 
 class ConvNet(torch.nn.Module):
-    def __init__(self, layers, out_channels, kernel_size):
+    def __init__(self, layers, out_channels, kernel_sizes):
         super(ConvNet, self).__init__()
 
         # The net consists of 8 blocks
@@ -114,7 +112,9 @@ class ConvNet(torch.nn.Module):
         # which makes ConvNet's forward() definition less tedious
         self.blocks = nn.Sequential()
 
-        for last_channels, this_channels in zip(layers, layers[1:]):
+        for last_channels, this_channels, kernel_size in zip(
+            layers, layers[1:], kernel_sizes
+        ):
             self.blocks.add_module(
                 f"layer{last_channels}",
                 ConvBlock(last_channels, this_channels, kernel_size),
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
     # %% LOAD MODEL
 
-    nnet = ConvNet([128, 64, 64, 64, 70], label_count(), 5)
+    nnet = ConvNet([20, 48, 64], label_count(), [4, 3, 2])
     optimiser = torch.optim.Adam(nnet.parameters())
     nnet.to(backend_dev)
 
@@ -346,14 +346,20 @@ if __name__ == "__main__":
 
     plt.plot(train_accuracies)
     plt.title("Training Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.plot(val_accuracies)
     plt.title("Validation Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.plot(train_losses)
     plt.title("Training Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
     plt.show()
 
     label_names = [number_to_label(i) for i in range(label_count())]
@@ -361,14 +367,20 @@ if __name__ == "__main__":
     plt.xticks(rotation="vertical", fontsize=5)
     plt.bar(label_names, label_accuracy(train_output, train_labels))
     plt.title("Training Accuracy per label")
+    plt.xlabel("Label")
+    plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
     plt.bar(label_names, label_accuracy(val_output, val_labels))
     plt.title("Validation Accuracy per label")
+    plt.xlabel("Label")
+    plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
     plt.bar(label_names, label_accuracy(test_output, test_labels))
     plt.title("Test Accuracy per label")
+    plt.xlabel("Label")
+    plt.ylabel("Accuracy (%)")
     plt.show()

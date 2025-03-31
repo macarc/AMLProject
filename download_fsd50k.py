@@ -53,9 +53,6 @@ def main():
     """
     Download FSD50K dataset
     """
-    # URL for CSV files with metadata
-    ground_truth_url = "https://zenodo.org/records/5117901/files/ARCA23K-FSD.ground_truth.zip?download=1"
-
     # URL for actual audio files
     # These are multipart ZIP files, so must be combined into a single zip file
     # before extracting!
