@@ -103,6 +103,7 @@ class ConvBlock(torch.nn.Module):
         return block_output
 
 
+
 class ConvNet(torch.nn.Module):
     def __init__(self, layers, out_channels, kernel_sizes):
         super(ConvNet, self).__init__()
@@ -167,8 +168,65 @@ class ConvNet(torch.nn.Module):
         network_output = self.lin(pooled)
 
         return network_output
+    
+class ResNet1D(nn.Module):
+    def __init__(self, layers, out_channels, kernel_sizes):
+        super(ResNet1D, self).__init__()
+
+        self.blocks = nn.Sequential()
+
+        for in_ch, out_ch, k in zip(layers, layers[1:], kernel_sizes):
+            self.blocks.add_module(
+                f"resblock_{in_ch}_{out_ch}",
+                ResBlock(in_ch, out_ch, k)
+            )
+
+        self.lin = nn.Linear(layers[-1], out_channels)
+        self.n_input_channels = layers[0]
+
+    def forward(self, x):
+        N, C, T = x.shape
+        assert C == self.n_input_channels
+
+        out = self.blocks(x)
+        pooled = out.mean(dim=2)  # Global average pooling
+        return self.lin(pooled)
+
+class ResBlock(nn.Module):
+    def __init__(self, input_channels, output_channels, kernel_size):
+        super(ResBlock, self).__init__()
+
+        # Use padding to keep time dimension the same
+        self.conv = nn.Sequential(
+            nn.Conv1d(input_channels, output_channels, kernel_size, padding=kernel_size // 2),
+            nn.ReLU()
+        )
+
+        # Use a 1x1 conv to match channels if needed
+        self.skip_proj = None
+        if input_channels != output_channels:
+            self.skip_proj = nn.Conv1d(input_channels, output_channels, kernel_size=1)
+
+    def forward(self, x):
+        identity = x
+
+        # Project input if necessary
+        if self.skip_proj is not None:
+            identity = self.skip_proj(identity)
+
+        out = self.conv(x)
+
+        # Make sure dimensions match before addition
+        if out.shape != identity.shape:
+            min_len = min(out.shape[2], identity.shape[2])
+            out = out[:, :, :min_len]
+            identity = identity[:, :, :min_len]
+
+        out = out + identity
+        return nn.ReLU()(out)
 
 
+    
 # %% ACCURACY CALCULATIONS
 
 
@@ -264,7 +322,7 @@ if __name__ == "__main__":
         val_labels,
         test_features,
         test_labels,
-    ) = load_data_to_device(backend_dev, extract_features, force_reload=True)
+    ) = load_data_to_device(backend_dev, extract_features, force_reload=False)
 
     train_dataset = AudioDataSet(train_features, train_labels)
     train_dataloader = DataLoader(train_dataset, batch_size=50, shuffle=True)
@@ -279,11 +337,16 @@ if __name__ == "__main__":
     # %% MODEL STORAGE FILENAME
 
     # needs to be changed per model
-    model_filename = "models/conv.pt"
+    model_filename = "models/conv3.pt"
 
     # %% LOAD MODEL
 
-    nnet = ConvNet([20, 48, 64], label_count(), [4, 3, 2])
+    # Original Convolutional Network
+    #nnet = ConvNet([20, 48, 64], label_count(), [6, 5, 4])
+
+    # New Residual Neural Network
+    nnet = ResNet1D([20,100,100],label_count(),[6, 5, 4])
+    
     optimiser = torch.optim.Adam(nnet.parameters())
     nnet.to(backend_dev)
 
@@ -296,6 +359,7 @@ if __name__ == "__main__":
     loss_fcn = torch.nn.CrossEntropyLoss(weight=label_weights)
 
     # %% TRAINING LOOP
+
 
     n_epochs = 100
 
@@ -365,21 +429,21 @@ if __name__ == "__main__":
     label_names = [number_to_label(i) for i in range(label_count())]
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, label_accuracy(train_output, train_labels))
+    plt.bar(label_names, 100*label_accuracy(train_output, train_labels))
     plt.title("Training Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, label_accuracy(val_output, val_labels))
+    plt.bar(label_names, 100*label_accuracy(val_output, val_labels))
     plt.title("Validation Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, label_accuracy(test_output, test_labels))
+    plt.bar(label_names, 100*label_accuracy(test_output, test_labels))
     plt.title("Test Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")
