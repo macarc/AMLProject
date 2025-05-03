@@ -33,10 +33,15 @@ class ConvNet(torch.nn.Module):
         self.net = nn.Sequential()
 
         # Add neural network layers
-        for last_layer_size, this_layer_size in zip(net_layers, net_layers[1:]):
+        for i, (last_layer_size, this_layer_size) in enumerate(
+            zip(net_layers, net_layers[1:])
+        ):
             self.net.add_module(
-                f"layer{last_layer_size}", nn.Linear(last_layer_size, this_layer_size)
+                f"layer{i}", nn.Linear(last_layer_size, this_layer_size)
             )
+            # Add activation to all layers but the last
+            if i < len(net_layers) - 2:
+                self.net.add_module(f"act{i}", nn.ReLU())
 
         # Save for later validation
         self.n_conv_input_channels = convolutional_layers[0]
