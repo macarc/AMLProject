@@ -1,20 +1,13 @@
-"""
-A GUI application, showing a use-case for the model.
-
-Allows the user to load one or multiple files, and classifies the files using the model,
-which enables easier navigation of the files.
-"""
-
-import glob
 from tkinter import *
-from tkinter import filedialog, ttk
-
-import pygame
+from tkinter import ttk, filedialog
+import glob
 import torch
+import pygame
 
-from lib.labels import label_count, number_to_label
-from lib.load_datasets import load_files
-from model import load_model
+import convnet
+from helpers import get_torch_backend, load_model
+from labels import label_count, number_to_label
+from load_datasets import load_files
 
 
 class AudioPlayer:
@@ -41,7 +34,7 @@ class AudioFileList:
         self.file_list = []
         self.labels = []
 
-        self.tree = ttk.Treeview(parent, columns="2")
+        self.tree = ttk.Treeview(parent, columns=2)
         self.tree.heading("#0", text="Effect type", anchor="center")
         self.tree.column("#0", stretch=False)
         self.tree.heading("#1", text="File name", anchor="center")
@@ -123,9 +116,10 @@ class LabelList:
 
 
 class App:
-    def __init__(self, nnet):
+    def __init__(self, nnet, extract_features):
         """Set up the GUI application"""
         self.nnet = nnet
+        self.extract_features = extract_features
 
         self.audio_player = AudioPlayer()
 
@@ -195,7 +189,7 @@ class App:
     def _load(self, filenames):
         """Load the features from filenames, get the predictions, and update the AudioFileList"""
         # Get features and predicted output
-        features = load_files(filenames)
+        features = load_files(filenames, backend_dev, self.extract_features)
         output = self.nnet(features)
 
         # Fix for if only one audio file is selected
@@ -212,8 +206,16 @@ class App:
         self.label_list.select_all()
 
 
-# Load the model from the file
-model, optimiser = load_model()
+# Load the ConvNet model from the file
+backend_dev = get_torch_backend()
+model_filename = "models/conv.pt"
+
+nnet = convnet.ConvNet([20, 48, 64], label_count(), [4, 3, 2])
+optimiser = torch.optim.Adam(nnet.parameters())
+nnet.to(backend_dev)
+
+if not load_model(model_filename, nnet, optimiser):
+    raise Exception("Couldn't load model!")
 
 # Create the GUI and run it
-App(model).run()
+App(nnet, convnet.extract_features).run()

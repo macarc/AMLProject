@@ -103,7 +103,6 @@ class ConvBlock(torch.nn.Module):
         return block_output
 
 
-
 class ConvNet(torch.nn.Module):
     def __init__(self, layers, out_channels, kernel_sizes):
         super(ConvNet, self).__init__()
@@ -168,7 +167,8 @@ class ConvNet(torch.nn.Module):
         network_output = self.lin(pooled)
 
         return network_output
-    
+
+
 class ResNet1D(nn.Module):
     def __init__(self, layers, out_channels, kernel_sizes):
         super(ResNet1D, self).__init__()
@@ -177,8 +177,7 @@ class ResNet1D(nn.Module):
 
         for in_ch, out_ch, k in zip(layers, layers[1:], kernel_sizes):
             self.blocks.add_module(
-                f"resblock_{in_ch}_{out_ch}",
-                ResBlock(in_ch, out_ch, k)
+                f"resblock_{in_ch}_{out_ch}", ResBlock(in_ch, out_ch, k)
             )
 
         self.lin = nn.Linear(layers[-1], out_channels)
@@ -192,14 +191,17 @@ class ResNet1D(nn.Module):
         pooled = out.mean(dim=2)  # Global average pooling
         return self.lin(pooled)
 
+
 class ResBlock(nn.Module):
     def __init__(self, input_channels, output_channels, kernel_size):
         super(ResBlock, self).__init__()
 
         # Use padding to keep time dimension the same
         self.conv = nn.Sequential(
-            nn.Conv1d(input_channels, output_channels, kernel_size, padding=kernel_size // 2),
-            nn.ReLU()
+            nn.Conv1d(
+                input_channels, output_channels, kernel_size, padding=kernel_size // 2
+            ),
+            nn.ReLU(),
         )
 
         # Use a 1x1 conv to match channels if needed
@@ -226,7 +228,6 @@ class ResBlock(nn.Module):
         return nn.ReLU()(out)
 
 
-    
 # %% ACCURACY CALCULATIONS
 
 
@@ -342,11 +343,11 @@ if __name__ == "__main__":
     # %% LOAD MODEL
 
     # Original Convolutional Network
-    #nnet = ConvNet([20, 48, 64], label_count(), [6, 5, 4])
+    # nnet = ConvNet([20, 48, 64], label_count(), [6, 5, 4])
 
     # New Residual Neural Network
-    nnet = ResNet1D([20,100,100],label_count(),[6, 5, 4])
-    
+    nnet = ResNet1D([20, 100, 100], label_count(), [6, 5, 4])
+
     optimiser = torch.optim.Adam(nnet.parameters())
     nnet.to(backend_dev)
 
@@ -359,7 +360,6 @@ if __name__ == "__main__":
     loss_fcn = torch.nn.CrossEntropyLoss(weight=label_weights)
 
     # %% TRAINING LOOP
-
 
     n_epochs = 100
 
@@ -429,21 +429,21 @@ if __name__ == "__main__":
     label_names = [number_to_label(i) for i in range(label_count())]
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, 100*label_accuracy(train_output, train_labels))
+    plt.bar(label_names, 100 * label_accuracy(train_output, train_labels))
     plt.title("Training Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, 100*label_accuracy(val_output, val_labels))
+    plt.bar(label_names, 100 * label_accuracy(val_output, val_labels))
     plt.title("Validation Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")
     plt.show()
 
     plt.xticks(rotation="vertical", fontsize=5)
-    plt.bar(label_names, 100*label_accuracy(test_output, test_labels))
+    plt.bar(label_names, 100 * label_accuracy(test_output, test_labels))
     plt.title("Test Accuracy per label")
     plt.xlabel("Label")
     plt.ylabel("Accuracy (%)")

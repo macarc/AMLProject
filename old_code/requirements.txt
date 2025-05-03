@@ -8,7 +8,6 @@ standard-sunau
 # matrices and machine learning
 numpy
 torch
-torchtext
 scikit-learn
 
 # dataset download feedback
@@ -23,7 +22,7 @@ tqdm
 
 # code formatting, optional
 black
-isort
+matplotlib
 
 # sound playback in gui
 pygame

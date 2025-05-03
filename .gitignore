@@ -4,3 +4,6 @@ datasets
 .venv
 __pycache__
 .DS_Store
+trained_models
+graphs
+runs

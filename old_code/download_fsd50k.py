@@ -1,12 +1,11 @@
-"""
-Download the FSD50K sound effect dataset from https://zenodo.org/records/5117901.
-"""
+# Download the FSD50K sound effect dataset
+# https://zenodo.org/records/5117901
+# Usage: python3 download_fsd50k.py
 
+from helpers import DownloadProgressBar
 import os
-import zipfile
 from urllib.request import urlretrieve
-
-from lib.helpers import DownloadProgressBar
+import zipfile
 
 
 def download(url, filename):
@@ -81,8 +80,9 @@ def main():
     download_multipart_zip(audio_eval_files_urls, "audio_eval")
 
 
-# Fix for macOS, see https://docs.python.org/3/library/urllib.request.html
-os.environ["no_proxy"] = "*"
+if __name__ == "__main__":
+    # Fix for macOS, see https://docs.python.org/3/library/urllib.request.html
+    os.environ["no_proxy"] = "*"
 
-# Download files!
-main()
+    # Download files!
+    main()
