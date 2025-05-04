@@ -88,7 +88,7 @@ class ResNet(nn.Module):
         assert x.shape == torch.Size([N, self.n_conv_input_channels, T])
 
         # Get output of convolutional network
-        block_output = self.convblocks(x)
+        block_output = self.convblocks(self.resblocks(x) + x)
 
         # Check the number of data points is as expected
         assert block_output.shape[0] == N

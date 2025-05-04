@@ -26,6 +26,8 @@ n_epochs = 200
 # Unique name per run
 run_name = get_model_name() + datetime.datetime.now().strftime("__%H_%M_%S__%d_%m_%Y")
 
+print(f"Starting training run {run_name}")
+
 # ==================================================
 # Setup
 # ==================================================

@@ -6,7 +6,7 @@ class ResBlock(nn.Module):
         super(ResBlock, self).__init__()
 
         # Define network block layers
-        self.lin = (nn.Conv1d(n_channels, n_channels, kernel_size, padding="same"),)
+        self.lin = nn.Conv1d(n_channels, n_channels, kernel_size, padding="same")
         self.act = nn.ReLU()
 
         # Save number of channels for validation later
@@ -29,12 +29,12 @@ class ResBlock(nn.Module):
         """
 
         # Check input has the right number of channels
-        assert x.shape[1] == self.n_input_channels
+        assert x.shape[1] == self.n_channels
 
         # Run model
         block_output = self.act(self.lin(x))
 
         # Check output has the right number of channels
-        assert block_output.shape[1] == self.n_output_channels
+        assert block_output.shape[1] == self.n_channels
 
         return block_output + x
